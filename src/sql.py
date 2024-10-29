@@ -31,7 +31,6 @@ class AsyncSQL:
             return await cursor.fetchone()
 
 
-# Пример использования
 """
 async def main():
     db = AsyncSQL('database.db')
