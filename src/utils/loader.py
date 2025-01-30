@@ -5,9 +5,14 @@ from PIL import Image
 class LOADER:
     @staticmethod
     def get_image(id):
-        path = os.path.join(os.getcwd(), "res", "images", id)
+        path = os.path.join(os.getcwd(), "res", "images", str(id) + ".jpg")
 
         return Image.open(path)
+    
+    def get_image_path(id):
+        path = os.path.join(os.getcwd(), "res", "images", str(id) + ".jpg")
+
+        return path
     
     @staticmethod
     def get_path():

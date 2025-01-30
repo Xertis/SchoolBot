@@ -12,7 +12,6 @@ class ROOT:
         self.router.message(F.document)(self.create_event)
         
     async def create_event(self, message: types.Message, bot: Bot):
-        doc = message.document
         file_id = message.document.file_id
 
         file = await bot.get_file(file_id)
