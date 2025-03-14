@@ -1,9 +1,9 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
-from constants import DB_PATH
+from src.utils.env import Constants
 from src.sql.db_tables import phone_numbers
 
-engine = create_engine(DB_PATH)
+engine = create_engine(Constants.DB_PATH)
 
 
 class DB_phone_numbers:

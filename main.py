@@ -1,8 +1,9 @@
 import asyncio
-from constants import TOKEN
 import logging
+from src.utils.env import Constants
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
+from src.sql.db_api import DB
 
 from src.keyboards.reply_keyboard import BuildReplyButtons
 
@@ -13,8 +14,9 @@ from src.utils.no_command_callback import no_command
 
 
 logging.basicConfig(level=logging.INFO)
-bot = Bot(token=TOKEN)
+bot = Bot(token=Constants.TOKEN)
 dp = Dispatcher()
+db = DB()
 
 inforation = INFORMATION()
 root = ROOT()
@@ -33,6 +35,9 @@ async def start(message: types.Message):
         [['Мероприятия', inforation.events, False]],
         [['Контакты', inforation.phone_numbers, False]]
     ]
+
+    if db.admins.has(message.from_user.id):
+        help.append([['Редактировать [ADMIN]', root.help, False]])
 
     await message.answer("зелебоба", parse_mode="Markdown", reply_markup = await BuildReplyButtons(help))
 

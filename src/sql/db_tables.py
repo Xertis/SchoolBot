@@ -1,11 +1,11 @@
 from sqlalchemy.ext.declarative import declarative_base
-from constants import DB_PATH
+from src.utils.env import Constants
 from sqlalchemy import (create_engine,
                         Column, Integer,
                         Text, TIMESTAMP,
                         ForeignKey)
 
-engine = create_engine(DB_PATH)
+engine = create_engine(Constants.DB_PATH)
 Base = declarative_base()
 
 
@@ -25,6 +25,13 @@ class events(Base):
     title = Column(Text)
     text = Column(Text)
     time = Column(TIMESTAMP)
+
+
+class admins(Base):
+    __tablename__ = "admins"
+
+    id = Column(Integer, primary_key=True)
+    tg_id = Column(Integer)
 
 
 class images(Base):

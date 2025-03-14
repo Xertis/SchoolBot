@@ -1,8 +1,11 @@
 from aiogram import Router, F, types
 from aiogram.filters import Command
 from src.sql.db_api import DB
-from constants import NEW_LINE_SYMBOL
+from src.utils.env import Constants
 from src.utils.loader import LOADER
+from src.utils.parsers import Parsers
+from datetime import datetime
+import os
 
 
 class INFORMATION:
@@ -29,7 +32,7 @@ class INFORMATION:
             if hasattr(block, "image_id"):
                 await message.answer_photo(photo=types.FSInputFile(path=LOADER.get_image_path(block.image_id)), caption=new_line, parse_mode="Markdown")
             else:
-                text += NEW_LINE_SYMBOL + new_line
+                text += Constants.NEW_LINE_SYMBOL + new_line
 
         if not if_for_run:
             text += "😕 Не найдено"
@@ -52,7 +55,14 @@ class INFORMATION:
 
 
     async def eating(self, message: types.Message):
-        await message.answer('W.I.P.')
+        eating_data = Parsers.eating.parse(LOADER.get_eating())
+
+        time_edit = os.path.getmtime(LOADER.get_eating())
+        date = datetime.fromtimestamp(time_edit).strftime("%d.%m.%Y")
+        
+        eating_message = Parsers.eating.to_str(eating_data, date)
+
+        await message.answer(eating_message, parse_mode="HTML")
 
     async def phone_numbers(self, message: types.Message):
         numbers = self.db.numbers.get_all()

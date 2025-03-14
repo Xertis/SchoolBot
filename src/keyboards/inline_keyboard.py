@@ -1,5 +1,13 @@
-import asyncio
-from aiogram import Router, F, types
-from aiogram.filters.callback_data import CallbackData
-from aiogram.utils.keyboard import InlineKeyboardBuilder
-from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
+from aiogram.types import InlineKeyboardMarkup, InlineKeyboardButton
+
+async def BuildInlineButtons(buttons: list):
+    inline_keyboard = []
+    
+    for row in buttons:
+        inline_row = []
+        for button in row:
+            inline_button = InlineKeyboardButton(text=button[0], callback_data=button[1])
+            inline_row.append(inline_button)
+        inline_keyboard.append(inline_row)
+    
+    return InlineKeyboardMarkup(inline_keyboard=inline_keyboard)

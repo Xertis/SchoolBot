@@ -18,6 +18,9 @@ class LOADER:
     def get_path():
         return os.path.join(os.getcwd(), "res", "images\\")
     
+    def get_eating():
+        return os.path.join(os.getcwd(), "res", "eating.csv")
+    
     @staticmethod
     def get_new_index(): 
         index = 0 
