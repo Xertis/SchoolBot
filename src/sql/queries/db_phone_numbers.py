@@ -15,7 +15,7 @@ class DB_phone_numbers:
         self.session.add(data)
         self.session.commit()
         return data
-    
+
     def get_all(self) -> list[phone_numbers]:
         data = self.session.query(phone_numbers).all()
         return data

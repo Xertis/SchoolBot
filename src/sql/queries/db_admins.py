@@ -31,5 +31,5 @@ class DB_admins:
 
         if data:
             return True
-        
+
         return False

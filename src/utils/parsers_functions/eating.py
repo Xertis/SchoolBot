@@ -1,39 +1,48 @@
 import csv
-from src.utils.loader import LOADER
+import io
 from aiogram.utils.markdown import hbold, hunderline
+
 
 class eating_parser:
     @staticmethod
-    def parse(file_path):
+    def parse(file_path_or_content, is_path=True):
         eating_data = []
 
         try:
-            with open(file_path, mode='r', encoding='utf-8') as file:
-                reader = csv.DictReader(file, delimiter=',')
-                for row in reader:
-                    eating_data.append({
-                        'День': row['День'],
-                        'Название блюда': row['Название блюда'],
-                        'Время приёма': row['Время приёма'],
-                        'Цена': float(row['Цена']),
-                        'Тип приёма пищи': row['Тип приёма пищи']
-                    })
+            file = None
+
+            if is_path:
+                file = open(file_path_or_content, mode='r', encoding='utf-8')
+            else:
+                file = io.StringIO(file_path_or_content)
+
+            reader = csv.DictReader(file, delimiter=',')
+            for row in reader:
+                eating_data.append({
+                    'День': row['День'],
+                    'Название блюда': row['Название блюда'],
+                    'Время приёма': row['Время приёма'],
+                    'Цена': float(row['Цена']),
+                    'Тип приёма пищи': row['Тип приёма пищи']
+                })
         except Exception as e:
-            print(f"Ошибка при чтении файла: {e}")
+            return False
 
         return eating_data
-    
+
     @staticmethod
     def to_str(eating_data, time):
         table = [f"Дата последнего обновления питания: {time}"]
-
-        for meal in eating_data:
-            current_day = meal['День']
+        i = 0
+        while i < len(eating_data):
+            current_day = eating_data[i]['День']
             table.append(f"\n{hunderline(current_day)}:\n")
+            while i < len(
+                    eating_data) and eating_data[i]['День'] == current_day:
+                table.append(
+                    f"{hbold(eating_data[i]['Тип приёма пищи'])}: {eating_data[i]['Название блюда']}\n"
+                    f"⏰ {eating_data[i]['Время приёма']} | 💰 {eating_data[i]['Цена']} руб.\n")
 
-            table.append(
-                f"{hbold(meal['Тип приёма пищи'])}: {meal['Название блюда']}\n"
-                f"⏰ {meal['Время приёма']} | 💰 {meal['Цена']} руб.\n"
-            )
+                i += 1
 
         return "\n".join(table)

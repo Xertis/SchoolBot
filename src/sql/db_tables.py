@@ -38,4 +38,5 @@ class images(Base):
     __tablename__ = "images"
     id = Column(Integer, primary_key=True)
 
+
 Base.metadata.create_all(engine)

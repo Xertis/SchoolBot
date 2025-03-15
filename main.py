@@ -21,6 +21,7 @@ db = DB()
 inforation = INFORMATION()
 root = ROOT()
 
+
 async def main():
     dp.include_routers(inforation.router, no_command, root.router)
     await dp.start_polling(bot)
@@ -39,8 +40,7 @@ async def start(message: types.Message):
     if db.admins.has(message.from_user.id):
         help.append([['Редактировать [ADMIN]', root.help, False]])
 
-    await message.answer("зелебоба", parse_mode="Markdown", reply_markup = await BuildReplyButtons(help))
+    await message.answer("зелебоба", parse_mode="Markdown", reply_markup=await BuildReplyButtons(help))
 
 if __name__ == "__main__":
     asyncio.run(main())
-

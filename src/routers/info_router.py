@@ -12,7 +12,7 @@ class INFORMATION:
     def __init__(self):
         self.router = Router()
         self.db = DB()
-        
+
         self.router.message(Command("info"))(self.info)
         self.router.message(Command("eating"))(self.eating)
         self.router.message(Command("phone_numbers"))(self.phone_numbers)
@@ -27,7 +27,8 @@ class INFORMATION:
 
         for block in data:
             if_for_run = True
-            new_line = f"*{block.title}*\n\n{block.text}\n\n*{block.time}*\n"
+            time = block.time.strftime(Constants.DATE_FORMAT)
+            new_line = f"🎈: *{block.title}*\n\n{block.text}\n\n⏰: _{time}_\n"
 
             if hasattr(block, "image_id"):
                 await message.answer_photo(photo=types.FSInputFile(path=LOADER.get_image_path(block.image_id)), caption=new_line, parse_mode="Markdown")
@@ -50,16 +51,16 @@ class INFORMATION:
             🗺️: г. Мурманск, ул. Беринга д. 18, 183050
         '''
 
-        message_text = '\n'.join(line.strip() for line in message_text.splitlines())
+        message_text = '\n'.join(line.strip()
+                                 for line in message_text.splitlines())
         await message.answer(message_text)
-
 
     async def eating(self, message: types.Message):
         eating_data = Parsers.eating.parse(LOADER.get_eating())
 
         time_edit = os.path.getmtime(LOADER.get_eating())
         date = datetime.fromtimestamp(time_edit).strftime("%d.%m.%Y")
-        
+
         eating_message = Parsers.eating.to_str(eating_data, date)
 
         await message.answer(eating_message, parse_mode="HTML")

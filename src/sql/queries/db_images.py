@@ -16,7 +16,7 @@ class DB_images:
         self.session.add(data)
         self.session.commit()
         return data
-    
+
     def get_all(self) -> list[images]:
         data = self.session.query(images).all()
         return data
