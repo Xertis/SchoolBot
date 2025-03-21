@@ -6,7 +6,7 @@ from src.utils.parsers import Parsers
 from src.keyboards.inline_keyboard import BuildInlineButtons
 from aiogram.fsm.context import FSMContext
 from src.state_machines.states import WaitDocument, EventCreate
-from aiogram.utils.markdown import hbold, hunderline
+from src.routers.info_router import ShowEvents
 from datetime import datetime
 from src.utils.env import Constants
 import os
@@ -26,7 +26,7 @@ class FSM_eating:
             state: FSMContext):
 
         await state.set_state(WaitDocument.Wait)
-        await callback_query.message.answer("Отправьте *.csv* таблицу с новым питанием", parse_mode="Markdown")
+        await callback_query.message.answer("Отправьте *.xlsx* таблицу с новым питанием", parse_mode="Markdown")
         await callback_query.answer()
 
     async def edit_eating_finish(
@@ -36,7 +36,7 @@ class FSM_eating:
             bot: Bot):
 
         if not message.document:
-            await message.answer("Вы не отправили файл. Пожалуйста, отправьте *.csv* таблицу.", parse_mode="MarkDown")
+            await message.answer("Вы не отправили файл. Пожалуйста, отправьте *.xlsx* таблицу.", parse_mode="MarkDown")
             await state.clear()
             return
 
@@ -47,23 +47,38 @@ class FSM_eating:
         await bot.download_file(file.file_path, destination=file_buffer)
 
         file_buffer.seek(0)
-        file_content = file_buffer.read().decode("utf-8")
+        file_content = file_buffer.read()
 
-        eating_data = Parsers.eating.parse(file_content, is_path=False)
+        file_name = document.file_name
+        date_str = file_name.split('-sm.xlsx')[0]
+        date_obj = datetime.strptime(date_str, "%Y-%m-%d")
+        date = date_obj.strftime("%d.%m.%Y")
+
+        eating_data = Parsers.eating.parse(file_content, is_path=False, date=date)
 
         if eating_data is False:
-            await message.answer("Файл неверный. Пожалуйста, отправьте корректный *.csv* файл.", parse_mode="MarkDown")
+            await message.answer("Файл неверный. Пожалуйста, отправьте корректный *.xlsx* файл.", parse_mode="MarkDown")
             await state.clear()
             return
 
-        with open(LOADER.get_eating(), "w", encoding="utf-8") as f:
-            f.write(file_content)
+        eating_message = Parsers.eating.to_str(eating_data)
 
-        time_edit = os.path.getmtime(LOADER.get_eating())
-        date = datetime.fromtimestamp(time_edit).strftime("%d.%m.%Y")
-
-        eating_message = Parsers.eating.to_str(eating_data, date)
-
+        for _, eat_data in eating_data.items():
+            for meal, data in eat_data.items():
+                dishes = data['блюда']
+                for dish in dishes:
+                    if dish["Раздел"] is None and dish["Блюдо"] is None:
+                        continue
+                    self.root.db.meal.add(
+                        meal=meal,
+                        category=dish["Раздел"],
+                        recipe=dish["№ рец."],
+                        dish=dish["Блюдо"],
+                        grams=dish["Выход, г"],
+                        price=data["цена"],
+                        date=date_obj
+                    )
+            break
         await message.answer(eating_message, parse_mode="HTML")
         await message.answer(f"Питание обновлено.")
         await state.clear()
@@ -197,6 +212,23 @@ class FSM_events:
         await state.clear()
         await callback_query.answer()
 
+
+class EventsRemover:
+    def __init__(self, root):
+        self.router = Router()
+        self.root = root
+
+        self.root.router.callback_query(F.data == "root.events.show_to_del")(self.Show)
+        self.root.router.callback_query(F.data == "root.events.delete")(self.DeleteEvent)
+
+    async def Show(self, message: types.Message):
+        data = self.root.db.events.get_all()
+        await ShowEvents("🎈 Мероприятия:", data, message)
+
+    async def DeleteEvent(self, message: types.Message, bot: Bot):
+        pass
+
+
 class ROOT:
     def __init__(self):
         self.router = Router()
@@ -225,7 +257,8 @@ class ROOT:
 
         help = [
             [['Изменить питание', "root.eating"]],
-            [['Добавить мероприятие', "root.events"]]
+            [['Добавить мероприятие', "root.events"]],
+            [['Удалить мероприятие', "root.events.show_to_del"]]
         ]
 
         await message.answer("Выберите действие:", parse_mode="Markdown", reply_markup=await BuildInlineButtons(help))

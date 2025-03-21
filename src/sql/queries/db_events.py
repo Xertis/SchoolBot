@@ -1,5 +1,6 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
+from sqlalchemy import func
 from src.utils.env import Constants
 from src.sql.db_tables import events
 from datetime import datetime as dt
@@ -23,11 +24,16 @@ class DB_events:
     def get_all(self) -> list[events]:
         data = self.session.query(events).all()
         return data
+    
+    def get_by_date(self, date: dt.date) -> list[events]:
+        return self.session.query(events).filter(
+            func.date(events.time) == date
+        ).all()
 
     def get_by_id(self, id: int) -> events:
-        data = self.session.query(events).filter(
-            events.id == id).one_or_none()
-        return data
+        return self.session.query(events).filter(
+            events.id == id
+        ).one_or_none()
 
     def delete_by_id(self, id: int) -> None:
         data = self.session.query(events).filter(

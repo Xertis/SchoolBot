@@ -19,4 +19,4 @@ async def no_command_func(message: Message, state: FSMContext):
         else:
             await commands[msg][0](message)
         return
-    await no_command.next()(message, state)
+    await no_command.next()(message=message, state=state)

@@ -6,6 +6,7 @@ from src.sql.queries.db_events import DB_events
 from src.sql.queries.db_phone_numbers import DB_phone_numbers
 from src.sql.queries.db_images import DB_images
 from src.sql.queries.db_admins import DB_admins
+from src.sql.queries.db_meal_plan import DB_meal_plan
 
 engine = create_engine(Constants.DB_PATH)
 
@@ -18,3 +19,4 @@ class DB:
         self.numbers = DB_phone_numbers(self.session)
         self.images = DB_images(self.session)
         self.admins = DB_admins(self.session)
+        self.meal = DB_meal_plan(self.session)

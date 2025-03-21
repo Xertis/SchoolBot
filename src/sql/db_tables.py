@@ -3,7 +3,8 @@ from src.utils.env import Constants
 from sqlalchemy import (create_engine,
                         Column, Integer,
                         Text, TIMESTAMP,
-                        ForeignKey)
+                        ForeignKey, Float,
+                        DECIMAL)
 
 engine = create_engine(Constants.DB_PATH)
 Base = declarative_base()
@@ -37,6 +38,19 @@ class admins(Base):
 class images(Base):
     __tablename__ = "images"
     id = Column(Integer, primary_key=True)
+
+
+class meal_plan(Base):
+    __tablename__ = "meal_plan"
+    id = Column(Integer, primary_key=True)
+    meal = Column(Text)
+    category = Column(Text)
+    recipe = Column(Text)
+    dish = Column(Text)
+    grams = Column(Float)
+    price = Column(DECIMAL)
+    date = Column(TIMESTAMP)
+
 
 
 Base.metadata.create_all(engine)
