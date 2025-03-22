@@ -8,7 +8,7 @@ from src.utils.calendar import get_calendar_keyboard, get_main_calendar_keyboard
 from datetime import datetime
 from src.keyboards.inline_keyboard import BuildInlineButtons
 from aiogram.fsm.context import FSMContext
-import os
+from aiogram.utils.markdown import hbold, hunderline
 
 async def ShowEvents(heading: str, data: list, keyboard: types.InlineKeyboardMarkup=None, message: types.Message=None):
     text = ''
@@ -122,15 +122,15 @@ class INFORMATION:
         new_text = "🎈 Мероприятия:\n"
 
         for i, event in enumerate(data):
-            new_text += f"*{i+1}. {event.title}*\n\n"
+            new_text += hbold(f"{i+1}. {event.title}\n\n")
             new_text += f"{event.text}\n\n"
-            new_text += event.time.time().strftime(Constants.TIME_FORMAT)
+            new_text += hunderline(event.time.time().strftime(Constants.TIME_FORMAT))
             new_text += "\n - - - - -\n"
 
         if new_text == "🎈 Мероприятия:\n":
             new_text += "😕 Мероприятия не найдены"
 
-        await callback_query.message.edit_text(new_text, parse_mode="Markdown")
+        await callback_query.message.edit_text(new_text, parse_mode="HTML")
 
     async def phone_numbers(self, message: types.Message):
         numbers = self.db.numbers.get_all()
