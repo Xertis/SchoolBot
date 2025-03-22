@@ -124,7 +124,7 @@ class INFORMATION:
         for i, event in enumerate(data):
             new_text += hbold(f"{i+1}. {event.title}\n\n")
             new_text += f"{event.text}\n\n"
-            new_text += hunderline(event.time.time().strftime(Constants.TIME_FORMAT))
+            new_text += hunderline("⏰: " + event.time.time().strftime(Constants.TIME_FORMAT))
             new_text += "\n - - - - -\n"
 
         if new_text == "🎈 Мероприятия:\n":

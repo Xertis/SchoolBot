@@ -29,6 +29,11 @@ class DB_events:
         return self.session.query(events).filter(
             func.date(events.time) == date
         ).all()
+    
+    def get_older(self, time: dt) -> list[events]:
+        return self.session.query(events).filter(
+            events.time < time
+        ).all()
 
     def get_by_id(self, id: int) -> events:
         return self.session.query(events).filter(
