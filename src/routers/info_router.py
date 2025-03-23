@@ -14,7 +14,8 @@ async def ShowEvents(heading: str, data: list, keyboard: types.InlineKeyboardMar
     text = ''
     if_for_run = False
 
-    await message.answer(heading, parse_mode="Markdown")
+    if len(heading) > 0:
+        await message.answer(heading, parse_mode="Markdown")
 
     for block in data:
         if_for_run = True

@@ -219,14 +219,32 @@ class EventsRemover:
         self.root = root
 
         self.root.router.callback_query(F.data == "root.events.show_to_del")(self.Show)
-        self.root.router.callback_query(F.data == "root.events.delete")(self.DeleteEvent)
+        self.root.router.callback_query(self.delete_cheaker)(self.DeleteEvent)
 
-    async def Show(self, message: types.Message):
+    @staticmethod
+    async def delete_cheaker(callback):
+        calendar_events = ("root.events.delete")
+        for event in calendar_events:
+            if callback.data.startswith(event):
+                return True
+        return False
+
+    async def Show(self, callback_query: types.CallbackQuery):
+        message = callback_query.message
         data = self.root.db.events.get_all()
-        await ShowEvents("🎈 Мероприятия:", data, message)
+        for event in data:
+            keyboard = [
+                [["Удалить", f"root.events.delete:{event.id}"]]
+            ]
 
-    async def DeleteEvent(self, message: types.Message, bot: Bot):
-        pass
+            await ShowEvents('', [event], message=message, keyboard=await BuildInlineButtons(keyboard))
+        await callback_query.answer()
+
+    async def DeleteEvent(self, callback_query: types.CallbackQuery, bot: Bot):
+        event_id = int(callback_query.data.split(':')[-1])
+        self.root.db.events.delete_by_id(event_id)
+        message = callback_query.message
+        await bot.delete_message(message.chat.id, message.message_id)
 
 
 class ROOT:
@@ -237,6 +255,7 @@ class ROOT:
         self.router.message(Command("root_help"))(self.help)
         self.eating = FSM_eating(self)
         self.events = FSM_events(self)
+        self.events_remover = EventsRemover(self)
 
     async def create_event(self, message: types.Message, bot: Bot):
         file_id = message.document.file_id
