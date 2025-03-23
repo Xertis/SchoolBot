@@ -11,8 +11,8 @@ class DB_images:
     def __init__(self, session: Session) -> None:
         self.session = session
 
-    def add(self, id=None) -> images:
-        data = images(id=id)
+    def add(self, tg_id=None) -> images:
+        data = images(tg_id=tg_id)
         self.session.add(data)
         self.session.commit()
         return data

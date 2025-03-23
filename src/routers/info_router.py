@@ -10,33 +10,34 @@ from src.keyboards.inline_keyboard import BuildInlineButtons
 from aiogram.fsm.context import FSMContext
 from aiogram.utils.markdown import hbold, hunderline
 
-async def ShowEvents(heading: str, data: list, keyboard: types.InlineKeyboardMarkup=None, message: types.Message=None):
-    text = ''
-    if_for_run = False
+db = DB()
 
-    if len(heading) > 0:
+async def ShowEvents(heading: str, data: list, keyboard: types.InlineKeyboardMarkup=None, message: types.Message=None):
+    if heading:
         await message.answer(heading, parse_mode="Markdown")
 
+    if not data:
+        await message.answer("😕 Мероприятия не найдены", parse_mode="Markdown", reply_markup=keyboard)
+        return
+
     for block in data:
-        if_for_run = True
         time = block.time.strftime(Constants.DATE_FORMAT)
-        new_line = f"🎈: *{block.title}*\n\n{block.text}\n\n⏰: _{time}_\n"
+        event_text = f"🎈: *{block.title}*\n\n{block.text}\n\n⏰: _{time}_\n"
 
         if hasattr(block, "image_id"):
-            await message.answer_photo(photo=types.FSInputFile(path=LOADER.get_image_path(block.image_id)), 
-                caption=new_line, 
+            image = db.images.get_by_id(block.image_id)
+            await message.answer_photo(
+                photo=image.tg_id,
+                caption=event_text,
                 parse_mode="Markdown",
                 reply_markup=keyboard
             )
         else:
-            text += Constants.NEW_LINE_SYMBOL + new_line
-
-    if not if_for_run:
-        text += "😕 Мероприятия не найдены"
-    else:
-        return
-
-    await message.edit_text(text, parse_mode="Markdown", reply_markup=keyboard)
+            await message.answer(
+                event_text,
+                parse_mode="Markdown",
+                reply_markup=keyboard
+            )
 
 
 class INFORMATION:

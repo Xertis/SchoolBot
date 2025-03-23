@@ -38,6 +38,7 @@ class admins(Base):
 class images(Base):
     __tablename__ = "images"
     id = Column(Integer, primary_key=True)
+    tg_id = Column(Text)
 
 
 class meal_plan(Base):

@@ -145,8 +145,12 @@ class FSM_events:
             message: types.Message,
             state: FSMContext):
         
+        if not message.photo:
+            await message.answer("Вы не отправили изображение или отправили его неправильно")
+            return
+        
         photo = message.photo[-1]
-    
+        
         data = await state.get_data()
         time = data["time"].strftime(Constants.DATE_FORMAT)
         await message.answer("Результат:", parse_mode="Markdown")
@@ -181,19 +185,12 @@ class FSM_events:
         data = await state.get_data()
         photo_id = data.get("photo_id")
 
-        file = await bot.get_file(photo_id)
-        file_path = file.file_path
-
-        index = LOADER.get_new_index()
-
-        new_path = f"{LOADER.get_path() + str(index)}.jpg"
-        await bot.download_file(file_path=file_path, destination=new_path)
+        image = self.root.db.images.add(tg_id=photo_id)
         
-        self.root.db.images.add(index)
         self.root.db.events.add(title = data["name"],
                                 text = data["description"],
                                 time = data["time"],
-                                image = index
+                                image = image.id
                                 )
         
         await callback_query.message.answer("Мероприятие добавлено!")
@@ -242,7 +239,11 @@ class EventsRemover:
 
     async def DeleteEvent(self, callback_query: types.CallbackQuery, bot: Bot):
         event_id = int(callback_query.data.split(':')[-1])
+        event = self.root.db.events.get_by_id(event_id)
+
+        self.root.db.images.delete_by_id(event.image_id)
         self.root.db.events.delete_by_id(event_id)
+
         message = callback_query.message
         await bot.delete_message(message.chat.id, message.message_id)
 
@@ -256,19 +257,6 @@ class ROOT:
         self.eating = FSM_eating(self)
         self.events = FSM_events(self)
         self.events_remover = EventsRemover(self)
-
-    async def create_event(self, message: types.Message, bot: Bot):
-        file_id = message.document.file_id
-
-        file = await bot.get_file(file_id)
-        file_path = file.file_path
-
-        index = LOADER.get_new_index()
-
-        new_path = f"{LOADER.get_path() + str(index)}.jpg"
-        await bot.download_file(file_path=file_path, destination=new_path)
-
-        self.db.images.add(index)
 
     async def help(self, message: types.Message):
         if not self.db.admins.has(message.from_user.id):

@@ -12,5 +12,6 @@ def EventsCleaner():
     for event in events:
         if current_time - event.time > timedelta(days=3):
             db.session.delete(event)
+            db.images.delete_by_id(event.image_id)
 
     db.session.commit()
