@@ -4,7 +4,7 @@ import schedule
 from src.utils.env import Constants
 from aiogram import Bot, Dispatcher, types
 from aiogram.filters.command import Command
-from src.tasks.tasks import EventsCleaner
+from src.tasks.tasks import EventsCleaner, MealCleaner
 from src.sql.db_api import DB
 from src.keyboards.reply_keyboard import BuildReplyButtons
 from src.routers.info_router import INFORMATION
@@ -22,6 +22,7 @@ root = ROOT()
 
 async def reg_scheduler_tasks():
     schedule.every(1).minutes.do(EventsCleaner)
+    schedule.every(1).days.do(MealCleaner)
 
 async def main():
     await reg_scheduler_tasks()

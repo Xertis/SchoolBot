@@ -76,7 +76,11 @@ class INFORMATION:
     async def eating(self, message: types.Message):
         eating_data = Parsers.eating.parse_from_db(self.db.meal.get_all())
         eating_message = Parsers.eating.to_str(eating_data)
-        await message.answer(eating_message, parse_mode="HTML")\
+
+        if not eating_message:
+            eating_message = "😕 Питание не обновлено"
+
+        await message.answer(eating_message, parse_mode="HTML")
         
     async def events(self, message: types.Message):
         current_date = datetime.today().date()

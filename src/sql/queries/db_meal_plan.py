@@ -40,6 +40,11 @@ class DB_meal_plan:
             meal_plan.id == id).one_or_none()
         return data
 
+    def get_older(self, date: dt) -> list[meal_plan]:
+        return self.session.query(meal_plan).filter(
+            meal_plan.date < date
+        ).all()
+
     def delete_by_id(self, id: int) -> None:
         data = self.session.query(meal_plan).filter(
             meal_plan.id == id).one_or_none()

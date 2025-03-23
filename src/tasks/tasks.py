@@ -15,3 +15,15 @@ def EventsCleaner():
             db.images.delete_by_id(event.image_id)
 
     db.session.commit()
+
+
+def MealCleaner():
+    current_time = dt.now()
+    meals = db.meal.get_older(current_time)
+
+    for meal in meals:
+        if current_time - meal.date > timedelta(days=3):
+            print("Делит")
+            db.session.delete(meal)
+
+    db.session.commit()
