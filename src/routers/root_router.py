@@ -5,7 +5,7 @@ from src.utils.loader import LOADER
 from src.utils.parsers import Parsers
 from src.keyboards.inline_keyboard import BuildInlineButtons
 from aiogram.fsm.context import FSMContext
-from src.state_machines.states import WaitDocument, EventCreate
+from src.state_machines.states import WaitDocument, WaitDocument2, EventCreate
 from src.routers.info_router import ShowEvents
 from datetime import datetime
 from src.utils.env import Constants
@@ -81,6 +81,65 @@ class FSM_eating:
             break
         await message.answer(eating_message, parse_mode="HTML")
         await message.answer(f"Питание обновлено.")
+        await state.clear()
+
+
+class FSM_lessons:
+    def __init__(self, root):
+        self.root = root
+
+        self.root.router.callback_query(F.data == "root.lessons")(self.edit_lessons_start)
+        self.root.router.message(WaitDocument2.Wait)(self.edit_lessons_finish)
+
+    async def edit_lessons_start(
+            self,
+            callback_query: types.CallbackQuery,
+            state: FSMContext):
+
+        await state.set_state(WaitDocument2.Wait)
+        await callback_query.message.answer("Отправьте *.xlsx* таблицу с новым расписанием", parse_mode="Markdown")
+        await callback_query.answer()
+
+    async def edit_lessons_finish(
+            self,
+            message: types.Message,
+            state: FSMContext,
+            bot: Bot):
+
+        if not message.document:
+            await message.answer("Вы не отправили файл. Пожалуйста, отправьте *.xlsx* таблицу.", parse_mode="MarkDown")
+            await state.clear()
+            return
+
+        document = message.document
+        file = await bot.get_file(document.file_id)
+
+        file_buffer = io.BytesIO()
+        await bot.download_file(file.file_path, destination=file_buffer)
+
+        file_buffer.seek(0)
+        file_content = file_buffer.read()
+
+        lessons_data = Parsers.lessons.parse(file_content, is_path=False)
+
+        if lessons_data is False:
+            await message.answer("Файл неверный. Пожалуйста, отправьте корректный *.xlsx* файл.", parse_mode="MarkDown")
+            await state.clear()
+            return
+
+        self.root.db.lessons.delete_all()
+
+        for weekday, school_classes in lessons_data.items():
+            for school_class_name, school_class_lessons in school_classes.items():
+                for lesson_number, lesson in enumerate(school_class_lessons):
+                    self.root.db.lessons.add(
+                        weekday=weekday,
+                        school_class=school_class_name,
+                        lesson=lesson,
+                        lesson_number=lesson_number+1
+                    )
+
+        await message.answer(f"Расписание обновлено.")
         await state.clear()
 
 
@@ -255,6 +314,7 @@ class ROOT:
 
         self.router.message(Command("root_help"))(self.help)
         self.eating = FSM_eating(self)
+        self.lessons = FSM_lessons(self)
         self.events = FSM_events(self)
         self.events_remover = EventsRemover(self)
 
@@ -264,8 +324,8 @@ class ROOT:
 
         help = [
             [['Изменить питание', "root.eating"]],
-            [['Добавить мероприятие', "root.events"]],
-            [['Удалить мероприятие', "root.events.show_to_del"]]
+            [['Изменить расписание', "root.lessons"]],
+            [['Добавить мероприятие', "root.events"], ['Удалить мероприятие', "root.events.show_to_del"]],
         ]
 
         await message.answer("Выберите действие:", parse_mode="Markdown", reply_markup=await BuildInlineButtons(help))

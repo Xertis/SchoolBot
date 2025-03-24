@@ -2,7 +2,6 @@ from aiogram import Router, F, types
 from aiogram.filters import Command
 from src.sql.db_api import DB
 from src.utils.env import Constants
-from src.utils.loader import LOADER
 from src.utils.parsers import Parsers
 from src.utils.calendar import get_calendar_keyboard, get_main_calendar_keyboard
 from datetime import datetime
@@ -81,6 +80,18 @@ class INFORMATION:
             eating_message = "😕 Питание не обновлено"
 
         await message.answer(eating_message, parse_mode="HTML")
+
+    async def lessons(self, message: types.Message):
+        weekdays = ["Пн", "Вт", "Ср", "Чт", "Пт", "Пн", "Пн"]
+
+        time = datetime.now()
+        weekday = weekdays[time.weekday()]
+
+        lessons = self.db.lessons.get_by_weekday(weekday=weekday)
+        lessons = Parsers.lessons.parse_from_db(lessons)
+        out = Parsers.lessons.to_str(lessons)
+
+        await message.answer(out, parse_mode="HTML")
         
     async def events(self, message: types.Message):
         current_date = datetime.today().date()

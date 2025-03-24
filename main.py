@@ -42,7 +42,7 @@ async def start(message: types.Message):
 
     help = [
         [['Информация', inforation.info, False]],
-        [['Питание', inforation.eating, False]],
+        [['Питание', inforation.eating, False], ['Расписание', inforation.lessons, False]],
         [['Мероприятия', inforation.events, False]],
         [['Контакты', inforation.phone_numbers, False]]
     ]

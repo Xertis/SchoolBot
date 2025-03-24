@@ -1,6 +1,5 @@
+import io
 import pandas as pd
-import os, io
-from datetime import datetime
 from aiogram.utils.markdown import hbold, hunderline
 
 EXPECTED_COLUMNS = ['Прием пищи', 'Раздел', '№ рец.', 'Блюдо', 'Выход, г', 'Цена', 'Калорийность', 'Белки', 'Жиры', 'Углеводы']

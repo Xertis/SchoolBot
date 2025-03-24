@@ -20,7 +20,8 @@ class DB_meal_plan:
             price: float,
             date: dt
         ) -> meal_plan:
-        data = meal_plan(meal=meal)
+        data = meal_plan()
+        data.meal = meal
         data.category = category
         data.recipe = recipe
         data.dish = dish

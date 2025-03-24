@@ -53,5 +53,15 @@ class meal_plan(Base):
     date = Column(TIMESTAMP)
 
 
+class lesson_schedule(Base):
+    __tablename__ = "lesson_schedule"
+    id = Column(Integer, primary_key=True)
+    weekday = Column(Text)
+    school_class = Column(Text)
+    lesson = Column(Text)
+    lesson_number = Column(Integer)
+
+
+
 
 Base.metadata.create_all(engine)
