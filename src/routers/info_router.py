@@ -1,4 +1,4 @@
-from aiogram import Router, F, types
+from aiogram import Router, F, types, Bot
 from aiogram.filters import Command
 from src.sql.db_api import DB
 from src.utils.env import Constants
@@ -104,8 +104,9 @@ class INFORMATION:
 
         await message.answer("Выберите действие:", parse_mode="Markdown", reply_markup=await BuildInlineButtons(help))
 
-    async def events_lenta(self, callback_query: types.CallbackQuery):
+    async def events_lenta(self, callback_query: types.CallbackQuery, bot: Bot):
         data = self.db.events.get_all()
+        await bot.delete_message(callback_query.message.chat.id, callback_query.message.message_id)
         await ShowEvents(heading="🎈 Мероприятия:", data=data, message=callback_query.message)
         await callback_query.answer()
 
